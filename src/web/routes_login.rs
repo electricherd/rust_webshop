@@ -26,7 +26,7 @@ const LOGIN_SUCCESS: LoginSuccess = LoginSuccess { success: true };
 
 async fn api_login(
     State(CtxState { _db, key_enc, .. }): State<CtxState>,
-    cookies: Cookies,
+    cookie_jar: Cookies,
     ctx: Ctx,
     payload: Json<LoginInput>,
 ) -> ApiResult<Json<LoginSuccess>> {
@@ -59,13 +59,12 @@ async fn api_login(
     };
     let token_str = encode(&Header::default(), &claims, &key_enc).expect("JWT encode should work");
 
-    cookies.add(
-        Cookie::build(JWT_KEY, token_str)
-            // if not set, the path defaults to the path from which it was called - prohibiting gql on root if login is on /api
-            .path("/")
-            .http_only(true)
-            .finish(),
-    );
+    let cookie: Cookie = Cookie::build(JWT_KEY)
+        // if not set, the path defaults to the path from which it was called - prohibiting gql on root if login is on /api
+        .path("/")
+        .http_only(true)
+        .build();
+    cookie_jar.add(cookie);
 
     Ok(Json(LOGIN_SUCCESS))
 }

@@ -49,7 +49,7 @@ impl<'a> TicketService<'a> {
             })
             .await
             .map_err(ApiError::from(self.ctx))
-            .map(|v: Vec<Ticket>| v.into_iter().next().expect("created ticket"))
+            .map(|v: Option<Ticket>| v.into_iter().next().unwrap())
     }
 
     pub async fn delete_ticket(&self, id: String) -> ApiResult<Ticket> {
